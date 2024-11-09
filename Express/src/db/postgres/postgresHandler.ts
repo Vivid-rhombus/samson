@@ -1,6 +1,4 @@
 import { Client } from 'pg';
-import { userQueryInterface } from './users.interface';
-import { taskQueryInterface } from './tasks.interface';
 
 let client: Client;
 

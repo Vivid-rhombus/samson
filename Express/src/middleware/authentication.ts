@@ -2,8 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 declare global {
+	// eslint-disable-next-line @typescript-eslint/no-namespace
 	namespace Express {
 		interface Request {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			user: any;
 		}
 	}
@@ -19,6 +21,7 @@ export const adminAuth = (req: Request, res: Response, next: NextFunction) => {
 	}
 
 	try {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const decodedPayload: any = jwt.verify(token, 'secret');
 		if (decodedPayload.data.role !== 'admin') {
 			res.sendStatus(403);

@@ -1,4 +1,3 @@
-import { taskInterface } from '../db/postgres/tasks.interface';
 import * as pgTaskHandler from '../db/postgres/tasksHandler';
 
 import { Request, Response } from 'express';

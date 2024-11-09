@@ -1,5 +1,3 @@
-import { ObjectId } from 'mongodb';
-
 export interface userQueryInterface {
 	id?: string;
 	name?: string;

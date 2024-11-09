@@ -56,8 +56,6 @@ export const updateOne = async (
 			return `${key} = $${index + 1}`;
 		})
 		.join(' , ')} WHERE ${whereClause}`;
-
-	console.log(sqlQuery);
 	const result = await getClient().query({
 		text: sqlQuery,
 		values: Object.values(user),

@@ -1,5 +1,3 @@
-import { ObjectId } from 'mongodb';
-
 export interface taskQueryInterface {
 	id?: string;
 	name?: string;
