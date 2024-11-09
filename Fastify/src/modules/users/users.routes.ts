@@ -6,7 +6,6 @@ import {
 	postUserHandler,
 	updateUserHandler,
 } from './users.controller';
-import { $ref } from './users.schemas';
 import { assignTasksHandler } from '../tasks/tasks.controller';
 
 async function userRoutes(server: FastifyInstance) {
@@ -14,9 +13,9 @@ async function userRoutes(server: FastifyInstance) {
 		'/',
 		{
 			schema: {
-				body: $ref('createUserSchema'),
+				body: { $ref: '/definitions/createUserSchema#' },
 				response: {
-					201: $ref('userSchema'),
+					201: { $ref: '/definitions/userSchema#' },
 				},
 			},
 		},
@@ -28,7 +27,7 @@ async function userRoutes(server: FastifyInstance) {
 		{
 			schema: {
 				response: {
-					200: $ref('getUsersResponse'),
+					200: { $ref: '/definitions/getUsersResponse#' },
 				},
 			},
 		},
@@ -39,9 +38,9 @@ async function userRoutes(server: FastifyInstance) {
 		'/:id',
 		{
 			schema: {
-				params: $ref('userIdSchema'),
+				params: { $ref: '/definitions/userIdSchema#' },
 				response: {
-					200: $ref('fullUserSchema'),
+					200: { $ref: '/definitions/fullUserSchema#' },
 				},
 			},
 		},
@@ -52,9 +51,9 @@ async function userRoutes(server: FastifyInstance) {
 		'/:id',
 		{
 			schema: {
-				params: $ref('userIdSchema'),
+				params: { $ref: '/definitions/userIdSchema#' },
 				response: {
-					200: $ref('deleteResponse'),
+					200: { $ref: '/definitions/deleteResponse#' },
 				},
 			},
 		},
@@ -65,10 +64,10 @@ async function userRoutes(server: FastifyInstance) {
 		'/:id',
 		{
 			schema: {
-				params: $ref('userIdSchema'),
-				body: $ref('updateUserSchema'),
+				params: { $ref: '/definitions/userIdSchema#' },
+				body: { $ref: '/definitions/updateUserSchema#' },
 				response: {
-					200: $ref('userSchema'),
+					200: { $ref: '/definitions/userSchema#' },
 				},
 			},
 		},

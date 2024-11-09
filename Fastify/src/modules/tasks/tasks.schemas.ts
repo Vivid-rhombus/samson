@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { buildJsonSchemas } from 'fastify-zod';
+import zodToJsonSchema from 'zod-to-json-schema';
 
 const createTaskSchema = z.object({
 	name: z.string(),
@@ -53,14 +53,12 @@ export type TaskIdParamInput = z.infer<typeof taskIdSchema>;
 export type TaskUpdateInput = z.infer<typeof updateTaskSchema>;
 export type TaskQuery = z.infer<typeof taskQuerySchema>;
 
-export const { schemas: taskSchemas, $ref } = buildJsonSchemas(
-	{
-		createTaskSchema,
-		updateTaskSchema,
-		taskIdSchema,
-		getTasksResponse,
-		taskSchema,
-		deleteResponse,
-	},
-	{ $id: 'taskSchemas' }
-);
+//export const { schemas: taskSchemas, $ref } = buildJsonSchemas(
+
+export const taskSchemas = {
+	createTaskSchema: zodToJsonSchema(createTaskSchema),
+	updateTaskSchema: zodToJsonSchema(updateTaskSchema),
+	taskIdSchema: zodToJsonSchema(taskIdSchema),
+	getTasksResponse: zodToJsonSchema(getTasksResponse),
+	taskSchema: zodToJsonSchema(taskSchema),
+};

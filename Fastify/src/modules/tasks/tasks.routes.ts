@@ -7,16 +7,15 @@ import {
 	postTaskHandler,
 	updateTaskHandler,
 } from './tasks.controller';
-import { $ref } from './tasks.schemas';
 
 async function taskRoutes(server: FastifyInstance) {
 	server.post(
 		'/',
 		{
 			schema: {
-				body: $ref('createTaskSchema'),
+				body: { $ref: '/definitions/createTaskSchema#' },
 				response: {
-					201: $ref('taskSchema'),
+					201: { $ref: '/definitions/taskSchema#' },
 				},
 			},
 		},
@@ -28,7 +27,7 @@ async function taskRoutes(server: FastifyInstance) {
 		{
 			schema: {
 				response: {
-					200: $ref('getTasksResponse'),
+					200: { $ref: '/definitions/getTasksResponse#' },
 				},
 			},
 		},
@@ -39,9 +38,9 @@ async function taskRoutes(server: FastifyInstance) {
 		'/:id',
 		{
 			schema: {
-				params: $ref('taskIdSchema'),
+				params: { $ref: '/definitions/taskIdSchema#' },
 				response: {
-					200: $ref('taskSchema'),
+					200: { $ref: '/definitions/taskSchema#' },
 				},
 			},
 		},
@@ -52,9 +51,9 @@ async function taskRoutes(server: FastifyInstance) {
 		'/:id',
 		{
 			schema: {
-				params: $ref('taskIdSchema'),
+				params: { $ref: '/definitions/taskIdSchema#' },
 				response: {
-					200: $ref('taskIdSchema'),
+					200: { $ref: '/definitions/taskIdSchema#' },
 				},
 			},
 		},
@@ -65,10 +64,10 @@ async function taskRoutes(server: FastifyInstance) {
 		'/:id',
 		{
 			schema: {
-				params: $ref('taskIdSchema'),
-				body: $ref('updateTaskSchema'),
+				params: { $ref: '/definitions/taskIdSchema#' },
+				body: { $ref: '/definitions/updateTaskSchema#' },
 				response: {
-					200: $ref('taskSchema'),
+					200: { $ref: '/definitions/taskSchema#' },
 				},
 			},
 		},
@@ -79,9 +78,9 @@ async function taskRoutes(server: FastifyInstance) {
 		'/:id',
 		{
 			schema: {
-				params: $ref('taskIdSchema'),
+				params: { $ref: '/definitions/taskIdSchema#' },
 				response: {
-					200: $ref('taskSchema'),
+					200: { $ref: '/definitions/taskSchema#' },
 				},
 			},
 		},
@@ -93,9 +92,9 @@ async function taskRoutes(server: FastifyInstance) {
 		{
 			// preHandler: [server.authenticate],
 			schema: {
-				params: $ref('taskIdSchema'),
+				params: { $ref: '/definitions/taskIdSchema#' },
 				response: {
-					200: $ref('deleteResponse'),
+					200: { $ref: '/definitions/deleteResponse#' },
 				},
 			},
 		},
@@ -108,7 +107,7 @@ async function taskRoutes(server: FastifyInstance) {
 			// preHandler: [server.authenticate],
 			schema: {
 				response: {
-					200: $ref('taskSchema'),
+					200: { $ref: '/definitions/taskSchema#' },
 				},
 			},
 		},

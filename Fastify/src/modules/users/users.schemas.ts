@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { buildJsonSchemas } from 'fastify-zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+
 import { taskSchema } from '../tasks/tasks.schemas';
 
 const createUserSchema = z.object({
@@ -54,15 +55,13 @@ export type UserIdParamInput = z.infer<typeof userIdSchema>;
 export type UserUpdateInput = z.infer<typeof updateUserSchema>;
 export type UserQuery = z.infer<typeof userQuerySchema>;
 
-export const { schemas: userSchemas, $ref } = buildJsonSchemas(
-	{
-		createUserSchema,
-		updateUserSchema,
-		userIdSchema,
-		fullUserSchema,
-		getUsersResponse,
-		userSchema,
-		deleteResponse,
-	},
-	{ $id: 'userSchemas' }
-);
+// export const { schemas: userSchemas, $ref } =
+export const userSchemas = {
+	createUserSchema: zodToJsonSchema(createUserSchema),
+	updateUserSchema: zodToJsonSchema(updateUserSchema),
+	userIdSchema: zodToJsonSchema(userIdSchema),
+	fullUserSchema: zodToJsonSchema(fullUserSchema),
+	getUsersResponse: zodToJsonSchema(getUsersResponse),
+	userSchema: zodToJsonSchema(userSchema),
+	deleteResponse: zodToJsonSchema(deleteResponse),
+};
