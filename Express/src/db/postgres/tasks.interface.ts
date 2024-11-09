@@ -1,7 +1,7 @@
 export interface taskQueryInterface {
 	id?: string;
 	name?: string;
-	completion?: boolean;
+	completed?: boolean;
 }
 
 export interface taskInterface {
@@ -9,7 +9,7 @@ export interface taskInterface {
 	name?: string;
 	description?: string;
 	user_id?: string | null;
-	completion?: boolean;
+	completed?: boolean;
 	completionDate?: Date;
 	updatedAt?: Date;
 	createdAt?: Date;

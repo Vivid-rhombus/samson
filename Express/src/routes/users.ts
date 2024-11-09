@@ -17,7 +17,7 @@ const router = Router();
 
 router.get('/', getUsers);
 router.get('/:id', validate({ params: userIdSchema }), getUser);
-router.put(
+router.patch(
 	'/:id',
 	validate({ params: userIdSchema, body: updateUserSchema }),
 	updateUser

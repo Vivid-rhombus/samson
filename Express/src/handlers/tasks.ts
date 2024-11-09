@@ -74,3 +74,31 @@ export const deleteTask = async (req: Request, res: Response) => {
 		console.log(`Error deleting task, error: ${err}`);
 	}
 };
+
+export const completeTask = async (req: Request, res: Response) => {
+	try {
+		const { id } = req.params;
+		console.log(`Completing task with id ${id}`);
+		await pgTaskHandler.updateOne(
+			{ id },
+			{ completed: true, completionDate: new Date() }
+		);
+		res.send();
+	} catch (err) {
+		res.status(500);
+		res.send(err);
+		console.log(`Error completing task, error: ${err}`);
+	}
+};
+
+export const assignTasks = async (req: Request, res: Response) => {
+	try {
+		console.log(`Assign tasks`);
+		await pgTaskHandler.assignTasks();
+		res.send();
+	} catch (err) {
+		res.status(500);
+		res.send(err);
+		console.log(`Error assigning tasks, error: ${err}`);
+	}
+};

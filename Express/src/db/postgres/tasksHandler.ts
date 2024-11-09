@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 
 import { taskQueryInterface, taskInterface } from './tasks.interface';
 import { QueryResult } from 'pg';
+import { userInterface } from './users.interface';
 
 const whereClauseBuilder = (query: taskQueryInterface) => {
 	return Object.entries(query)
@@ -75,4 +76,29 @@ export const droptasks = async () => {
 	const sqlQuery = `DELETE FROM tasks`;
 	const result = await getClient().query(sqlQuery);
 	return result;
+};
+
+export const assignTasks = async () => {
+	const userSqlQuery = 'SELECT id FROM users';
+	const users: QueryResult<userInterface> = await getClient().query(
+		userSqlQuery
+	);
+	const unassignedTasks: QueryResult<taskInterface> = await getClient().query(
+		'SELECT * FROM tasks WHERE user_id IS null'
+	);
+
+	const updates = unassignedTasks.rows.map((task) => {
+		const randomUserIndex = Math.floor(Math.random() * users.rows.length);
+		const randomUser = users.rows[randomUserIndex];
+		console.log(randomUser);
+
+		return getClient().query({
+			text: 'UPDATE tasks SET user_id = $1 WHERE id = $2 RETURNING *',
+			values: [randomUser.id, task.id],
+		});
+	});
+
+	const results = await Promise.all(updates);
+
+	return results;
 };

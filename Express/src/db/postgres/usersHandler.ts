@@ -13,8 +13,19 @@ const whereClauseBuilder = (query: userQueryInterface) => {
 };
 
 export const findOne = async (query: userQueryInterface) => {
-	const whereClause = whereClauseBuilder(query);
-	const sqlQuery = `SELECT * FROM users WHERE ${whereClause}`;
+	const sqlQuery = `
+  SELECT 
+    users.id
+  , users.name
+  , users.role
+  , users.createdat
+  , users.updatedat
+  , json_agg(tasks.*) as tasks
+  FROM users 
+  LEFT JOIN tasks 
+  ON users.id = tasks.user_id 
+  WHERE tasks.user_id = '${query.id}'
+  GROUP BY users.id`;
 	const result: QueryResult<userInterface> = await getClient().query(sqlQuery);
 	return result.rows[0];
 };
