@@ -39,7 +39,7 @@ export const postUser = async (req: Request, res: Response) => {
 	try {
 		const { name, role } = req.body;
 		console.log(`Adding user`);
-		await pgUserHandler.createOne({ name, role, tasks: [] });
+		await pgUserHandler.createOne({ name, role });
 		res.send();
 	} catch (err) {
 		res.status(500);

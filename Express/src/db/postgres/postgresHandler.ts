@@ -12,7 +12,6 @@ export const connectDB = async () => {
       id UUID PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       role VARCHAR(50) NOT NULL,
-      tasks UUID[] DEFAULT '{}',
       createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
       updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
@@ -24,6 +23,7 @@ export const connectDB = async () => {
       id UUID PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       description TEXT,
+      user_id UUID,
       completed BOOLEAN DEFAULT FALSE,
       completionDate TIMESTAMPTZ,
       createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
