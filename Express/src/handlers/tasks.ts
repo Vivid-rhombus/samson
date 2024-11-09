@@ -1,6 +1,6 @@
-import * as pgTaskHandler from '../db/postgres/tasksHandler';
-
 import { Request, Response } from 'express';
+
+import * as pgTaskHandler from '../db/postgres/tasksHandler';
 
 export const getTasks = async (req: Request, res: Response) => {
 	try {
@@ -53,7 +53,10 @@ export const updateTask = async (req: Request, res: Response) => {
 		const { name, description } = req.body;
 		const { id } = req.params;
 		console.log(`Updating task with id ${id}`);
-		await pgTaskHandler.updateOne({ id: id }, { name, description });
+		await pgTaskHandler.updateOne(
+			{ id },
+			{ ...(name && { name }), ...(description && { description }) }
+		);
 		res.send();
 	} catch (err) {
 		res.status(500);

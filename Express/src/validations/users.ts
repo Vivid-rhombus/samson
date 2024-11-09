@@ -1,16 +1,14 @@
 import Joi from 'joi';
 
-const S = Joi.string();
-
 export const userSchema = Joi.object({
-	name: S.required(),
-	role: S.required(),
+	name: Joi.string().required(),
+	role: Joi.string().required(),
 }).required();
 
 export const updateUserSchema = Joi.object({
-	role: S.valid('admin', 'user'),
+	role: Joi.string().required().valid('admin', 'user'),
 }).required();
 
 export const userIdSchema = Joi.object({
-	id: S.required(),
+	id: Joi.string().required(),
 }).required();

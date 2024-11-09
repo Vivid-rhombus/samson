@@ -34,7 +34,7 @@ export const createOne = async (task: taskInterface) => {
 	task.id = randomUUID();
 	task.createdAt = new Date();
 	task.updatedAt = new Date();
-	task.user_id = null;
+	task.user_id = task?.user_id || null;
 	const sqlQuery = `INSERT INTO tasks(${Object.keys(task).join(
 		', '
 	)}) VALUES (${Object.keys(task)

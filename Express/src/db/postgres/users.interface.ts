@@ -1,3 +1,5 @@
+import { taskInterface } from './tasks.interface';
+
 export interface userQueryInterface {
 	id?: string;
 	name?: string;
@@ -8,7 +10,7 @@ export interface userInterface {
 	id?: string;
 	name?: string;
 	role?: string;
-	tasks?: object;
+	tasks?: taskInterface[];
 	updatedAt?: Date;
 	createdAt?: Date;
 }

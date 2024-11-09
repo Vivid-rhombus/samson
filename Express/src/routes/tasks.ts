@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import validate from 'express-joi-validations';
+import { ExpressJoiInstance, createValidator } from 'express-joi-validation';
 
 import {
 	taskSchema,
@@ -18,17 +18,19 @@ import {
 import { adminAuth } from '../middleware/authentication';
 
 const router = Router();
+const validator: ExpressJoiInstance = createValidator();
 
 router.get('/', getTasks);
-router.get('/:id', validate({ params: taskIdSchema }), getTask);
+router.get('/:id', validator.params(taskIdSchema), getTask);
 router.patch(
 	'/:id',
-	validate({ params: taskIdSchema, body: updateTaskSchema }),
+	validator.params(taskIdSchema),
+	validator.body(updateTaskSchema),
 	updateTask
 );
-router.put('/:id/complete', validate({ params: taskIdSchema }), completeTask);
-router.delete('/:id', validate({ params: taskIdSchema }), deleteTask);
-router.post('/', adminAuth, validate({ body: taskSchema }), postTask);
+router.put('/:id/complete', validator.params(taskIdSchema), completeTask);
+router.delete('/:id', validator.params(taskIdSchema), deleteTask);
+router.post('/', adminAuth, validator.body(taskSchema), postTask);
 router.post('/assign', adminAuth, assignTasks);
 
 export default router;

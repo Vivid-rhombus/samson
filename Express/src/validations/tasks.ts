@@ -1,17 +1,15 @@
 import Joi from 'joi';
 
-const S = Joi.string();
-
 export const taskSchema = Joi.object({
-	name: S.required(),
-	description: S.required(),
+	name: Joi.string().required(),
+	description: Joi.string().required(),
 }).required();
 
 export const updateTaskSchema = Joi.object({
-	name: S.required(),
-	description: S.required(),
+	name: Joi.string(),
+	description: Joi.string(),
 }).required();
 
 export const taskIdSchema = Joi.object({
-	id: S.required(),
+	id: Joi.string().required(),
 }).required();
