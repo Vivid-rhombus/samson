@@ -1,11 +1,28 @@
 import { Router } from 'express';
+import validate from 'express-joi-validations';
 
-const router: Router = Router();
+import {
+	userSchema,
+	updateUserSchema,
+	userIdSchema,
+} from '../validations/users';
+import {
+	getUser,
+	getUsers,
+	postUser,
+	updateUser,
+	deleteUser,
+} from '../handlers/users';
+const router = Router();
 
-router.get('/');
-router.get('/:id');
-router.put('/:id');
-router.delete('/:id');
-router.post('/:id');
+router.get('/', getUsers);
+router.get('/:id', validate({ params: userIdSchema }), getUser);
+router.put(
+	'/:id',
+	validate({ params: userIdSchema, body: updateUserSchema }),
+	updateUser
+);
+router.delete('/:id', validate({ params: userIdSchema }), deleteUser);
+router.post('/', validate({ body: userSchema }), postUser);
 
 export default router;

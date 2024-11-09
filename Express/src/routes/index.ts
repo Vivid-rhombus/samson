@@ -3,7 +3,7 @@ import { Router, Request, Response } from 'express';
 import userRouter from './users';
 import taskRouter from './tasks';
 
-const router: Router = Router();
+const router = Router();
 
 router.use('/health', (req: Request, res: Response) => {
 	res.send('good');
