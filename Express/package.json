@@ -12,12 +12,21 @@
 	"license": "ISC",
 	"description": "",
 	"devDependencies": {
+		"@types/cors": "^2.8.17",
 		"@types/express": "^5.0.0",
+		"@types/jsonwebtoken": "^9.0.7",
 		"@types/node": "^22.9.0",
+		"@types/pg": "^8.11.10",
 		"nodemon": "^3.1.7",
 		"ts-node": "^10.9.2"
 	},
 	"dependencies": {
-		"express": "^4.21.1"
+		"cors": "^2.8.5",
+		"express": "^4.21.1",
+		"express-joi-validations": "^0.1.0",
+		"joi": "^17.13.3",
+		"jsonwebtoken": "^9.0.2",
+		"mongodb": "^6.10.0",
+		"pg": "^8.13.1"
 	}
 }
