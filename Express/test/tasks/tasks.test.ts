@@ -3,25 +3,29 @@ import request, { Response } from 'supertest';
 import jwt from 'jsonwebtoken';
 
 import { loadApp } from '../../src/server';
-import { createOne, find, droptasks } from '../../src/db/postgres/tasksHandler';
 import { taskInterface } from '../../src/db/postgres/tasks.interface';
 import { randomUUID } from 'crypto';
+import {
+	createTask,
+	dropTasksTable,
+	findTasks,
+} from '../../src/db/tasksHandler';
 
 let app: Express;
-
+dropTasksTable;
 describe('Test /tasks endpoints', () => {
 	beforeAll(async () => {
 		app = await loadApp();
-		await droptasks();
+		await dropTasksTable();
 	});
 
 	beforeEach(async () => {
-		await createOne({ name: 'abc', description: 'aaa' });
-		await createOne({ name: 'xyz', description: 'bbb' });
+		await createTask({ name: 'abc', description: 'aaa' });
+		await createTask({ name: 'xyz', description: 'bbb' });
 	});
 
 	afterEach(async () => {
-		await droptasks();
+		await dropTasksTable();
 	});
 
 	describe('GET /tasks', () => {
@@ -35,13 +39,13 @@ describe('Test /tasks endpoints', () => {
 		});
 
 		it('Should fail to get all tasks', async () => {
-			await droptasks();
+			await dropTasksTable();
 			const response: Response = await request(app).get(`/tasks`);
 			expect(response.status).toBe(404);
 		});
 
 		it('Should get a specific task', async () => {
-			const users: taskInterface[] = await find({});
+			const users = await findTasks();
 			const { id } = users[0];
 			const response: Response = await request(app).get(`/tasks/${id}`);
 			expect(response.body).toMatchObject({
@@ -60,7 +64,7 @@ describe('Test /tasks endpoints', () => {
 
 	describe('POST /tasks', () => {
 		it('Should create a task', async () => {
-			const token: string = jwt.sign({ data: { role: 'admin' } }, 'secret');
+			const token: string = jwt.sign({ role: 'admin' }, 'secret');
 			const response: Response = await request(app)
 				.post(`/tasks`)
 				.auth(token, { type: 'bearer' })
@@ -68,7 +72,7 @@ describe('Test /tasks endpoints', () => {
 					name: 'efg',
 					description: 'user',
 				});
-			const tasks: taskInterface[] = await find({});
+			const tasks = await findTasks();
 			expect(response.status).toBe(200);
 			expect(tasks.length).toBe(3);
 			expect(tasks).toMatchObject([
@@ -100,7 +104,7 @@ describe('Test /tasks endpoints', () => {
 		});
 
 		it('Should fail to create a task because of schema', async () => {
-			const token: string = jwt.sign({ data: { role: 'admin' } }, 'secret');
+			const token: string = jwt.sign({ role: 'admin' }, 'secret');
 			const response: Response = await request(app)
 				.post(`/tasks`)
 				.auth(token, { type: 'bearer' })
@@ -112,23 +116,21 @@ describe('Test /tasks endpoints', () => {
 	});
 
 	it('Should delete a task', async () => {
-		let users: taskInterface[] = await find({});
+		let users = await findTasks();
 		const { id } = users[0];
 		await request(app).delete(`/tasks/${id}`);
-		users = await find({});
+		users = await findTasks();
 		expect(users.length).toBe(1);
 		expect(users[0].id).not.toBe(id);
 	});
 
 	it('Should patch a task', async () => {
-		let tasks: taskInterface[] = await find({});
-		const task: taskInterface | undefined = tasks.find(
-			(task: taskInterface) => {
-				return task.name === 'abc';
-			}
-		);
+		let tasks = await findTasks();
+		const task = tasks.find((task) => {
+			return task.name === 'abc';
+		});
 		await request(app).patch(`/tasks/${task?.id}`).send({ name: 'efg' });
-		tasks = await find({});
+		tasks = await findTasks();
 		expect(tasks).toMatchObject([
 			{ name: 'xyz', description: 'bbb' },
 			{ name: 'efg', description: 'aaa' },
@@ -136,14 +138,12 @@ describe('Test /tasks endpoints', () => {
 	});
 
 	it('Should complete a task', async () => {
-		let tasks: taskInterface[] = await find({});
-		const task: taskInterface | undefined = tasks.find(
-			(task: taskInterface) => {
-				return task.name === 'abc';
-			}
-		);
+		let tasks = await findTasks();
+		const task = tasks.find((task) => {
+			return task.name === 'abc';
+		});
 		await request(app).put(`/tasks/${task?.id}/complete`).send();
-		tasks = await find({});
+		tasks = await findTasks();
 		expect(tasks).toMatchObject([
 			{ name: 'xyz', description: 'bbb' },
 			{ name: 'abc', description: 'aaa', completed: true },

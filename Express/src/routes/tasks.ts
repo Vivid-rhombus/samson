@@ -1,11 +1,6 @@
 import { Router } from 'express';
-import { ExpressJoiInstance, createValidator } from 'express-joi-validation';
+import validator from '../middleware/validationMiddleware';
 
-import {
-	taskSchema,
-	updateTaskSchema,
-	taskIdSchema,
-} from '../validations/tasks';
 import {
 	getTask,
 	getTasks,
@@ -15,22 +10,36 @@ import {
 	completeTask,
 	assignTasks,
 } from '../handlers/tasks';
-import { adminAuth } from '../middleware/authentication';
+import auth, { adminAuth } from '../middleware/authentication';
+
+import {
+	createTaskSchema,
+	idSchema,
+	updateTaskSchema,
+} from '../validations/tasks';
 
 const router = Router();
-const validator: ExpressJoiInstance = createValidator();
+// const validator: ExpressJoiInstance = createValidator();
 
 router.get('/', getTasks);
-router.get('/:id', validator.params(taskIdSchema), getTask);
+router.get('/:id', validator({ params: idSchema }), getTask);
 router.patch(
 	'/:id',
-	validator.params(taskIdSchema),
-	validator.body(updateTaskSchema),
+	validator({ params: idSchema, body: updateTaskSchema }),
 	updateTask
 );
-router.put('/:id/complete', validator.params(taskIdSchema), completeTask);
-router.delete('/:id', validator.params(taskIdSchema), deleteTask);
-router.post('/', adminAuth, validator.body(taskSchema), postTask);
-router.post('/assign', adminAuth, assignTasks);
+router.put('/:id/complete', validator({ params: idSchema }), completeTask);
+router.delete('/:id', validator({ params: idSchema }), deleteTask);
+router.post(
+	'/',
+	auth({ predicate: (payload) => payload.role === 'admin' }),
+	validator({ body: createTaskSchema }),
+	postTask
+);
+router.post(
+	'/assign',
+	auth({ predicate: (payload) => payload.role === 'admin' }),
+	assignTasks
+);
 
 export default router;

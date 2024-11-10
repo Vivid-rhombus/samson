@@ -1,11 +1,20 @@
 import { Request, Response } from 'express';
 
-import * as pgTaskHandler from '../db/postgres/tasksHandler';
+import { CreateTask, UpdateTask } from '../validations/tasks';
+import { Id } from '../validations/users';
+import {
+	createTask,
+	deleteTaskById,
+	findTaskById,
+	findTasks,
+	updateTaskById,
+	assignTasks as assign,
+} from '../db/tasksHandler';
 
 export const getTasks = async (req: Request, res: Response) => {
 	try {
 		console.log('Fetching tasks');
-		const tasks = await pgTaskHandler.find({});
+		const tasks = await findTasks();
 		if (tasks.length === 0) {
 			res.sendStatus(404);
 			return;
@@ -20,14 +29,14 @@ export const getTasks = async (req: Request, res: Response) => {
 
 export const getTask = async (req: Request, res: Response) => {
 	try {
-		const { id } = req.params;
+		const { id } = req.params as Id;
 		console.log(`Fetching task with id ${id}`);
-		const tasks = await pgTaskHandler.findOne({ id });
-		if (!tasks) {
+		const task = await findTaskById(id);
+		if (!task) {
 			res.sendStatus(404);
 			return;
 		}
-		res.send(tasks);
+		res.send(task);
 	} catch (err) {
 		res.status(500);
 		res.send(err);
@@ -37,9 +46,9 @@ export const getTask = async (req: Request, res: Response) => {
 
 export const postTask = async (req: Request, res: Response) => {
 	try {
-		const { name, description } = req.body;
+		const { name, description } = req.body as CreateTask;
 		console.log(`Adding task`);
-		await pgTaskHandler.createOne({ name, description });
+		await createTask({ name, description });
 		res.send();
 	} catch (err) {
 		res.status(500);
@@ -50,13 +59,13 @@ export const postTask = async (req: Request, res: Response) => {
 
 export const updateTask = async (req: Request, res: Response) => {
 	try {
-		const { name, description } = req.body;
-		const { id } = req.params;
+		const { name, description } = req.body as UpdateTask;
+		const { id } = req.params as Id;
 		console.log(`Updating task with id ${id}`);
-		await pgTaskHandler.updateOne(
-			{ id },
-			{ ...(name && { name }), ...(description && { description }) }
-		);
+		await updateTaskById(id, {
+			...(name && { name }),
+			...(description && { description }),
+		});
 		res.send();
 	} catch (err) {
 		res.status(500);
@@ -67,9 +76,9 @@ export const updateTask = async (req: Request, res: Response) => {
 
 export const deleteTask = async (req: Request, res: Response) => {
 	try {
-		const { id } = req.params;
+		const { id } = req.params as Id;
 		console.log(`Deleting task with id ${id}`);
-		await pgTaskHandler.deleteOne({ id: id });
+		await deleteTaskById(id);
 		res.send();
 	} catch (err) {
 		res.status(500);
@@ -80,12 +89,9 @@ export const deleteTask = async (req: Request, res: Response) => {
 
 export const completeTask = async (req: Request, res: Response) => {
 	try {
-		const { id } = req.params;
+		const { id } = req.params as Id;
 		console.log(`Completing task with id ${id}`);
-		await pgTaskHandler.updateOne(
-			{ id },
-			{ completed: true, completionDate: new Date() }
-		);
+		await updateTaskById(id, { completed: true, completedAt: new Date() });
 		res.send();
 	} catch (err) {
 		res.status(500);
@@ -97,7 +103,7 @@ export const completeTask = async (req: Request, res: Response) => {
 export const assignTasks = async (req: Request, res: Response) => {
 	try {
 		console.log(`Assign tasks`);
-		await pgTaskHandler.assignTasks();
+		await assign();
 		res.send();
 	} catch (err) {
 		res.status(500);
