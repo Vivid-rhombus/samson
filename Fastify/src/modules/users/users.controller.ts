@@ -5,11 +5,11 @@ import {
 	UserUpdateInput,
 } from './users.schemas';
 import {
-	createOne,
-	deleteOne,
-	find,
-	findOne,
-	updateOne,
+	createUser,
+	deleteUserById,
+	findUsers,
+	findUserById,
+	updateUserById,
 } from '../../db/usersHandler';
 
 export async function postUserHandler(
@@ -18,11 +18,12 @@ export async function postUserHandler(
 	}>,
 	reply: FastifyReply
 ) {
+	console.log('hi');
 	const body = request.body;
 
 	try {
-		const user = await createOne(body);
-
+		const user = await createUser(body);
+		console.log(user);
 		return reply.code(201).send(user);
 	} catch (e) {
 		console.log(e);
@@ -35,9 +36,8 @@ export async function getUsersHandler(
 	reply: FastifyReply
 ) {
 	try {
-		console.log('asdsd');
-		const users = await find({});
-
+		const users = await findUsers();
+		if (users.length === 0) return reply.code(404).send();
 		return reply.code(200).send(users);
 	} catch (e) {
 		console.log(e);
@@ -51,8 +51,8 @@ export async function getUserHandler(
 ) {
 	try {
 		const { id } = request.params;
-		const user = await findOne({ id });
-
+		const user = await findUserById(id);
+		if (!user) return reply.code(404).send();
 		return reply.code(200).send(user);
 	} catch (e) {
 		console.log(e);
@@ -66,7 +66,7 @@ export async function deleteUserHandler(
 ) {
 	try {
 		const { id } = request.params;
-		const user = await deleteOne({ id });
+		const user = await deleteUserById(id);
 
 		return reply.code(200).send(user);
 	} catch (e) {
@@ -82,7 +82,7 @@ export async function updateUserHandler(
 	try {
 		const { id } = request.params;
 		const body = request.body;
-		const user = await updateOne({ id }, body);
+		const user = await updateUserById(id, body);
 
 		return reply.code(200).send(user);
 	} catch (e) {

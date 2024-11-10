@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import {
+	assignTasksHandler,
 	completeTaskHandler,
 	deleteTaskHandler,
 	getTaskHandler,
@@ -12,6 +13,7 @@ async function taskRoutes(server: FastifyInstance) {
 	server.post(
 		'/',
 		{
+			preHandler: [server.authenticate],
 			schema: {
 				body: { $ref: '/definitions/createTaskSchema#' },
 				response: {
@@ -90,11 +92,10 @@ async function taskRoutes(server: FastifyInstance) {
 	server.put(
 		'/:id/complete',
 		{
-			// preHandler: [server.authenticate],
 			schema: {
 				params: { $ref: '/definitions/taskIdSchema#' },
 				response: {
-					200: { $ref: '/definitions/deleteResponse#' },
+					200: { $ref: '/definitions/userIdSchema#' },
 				},
 			},
 		},
@@ -102,16 +103,16 @@ async function taskRoutes(server: FastifyInstance) {
 	);
 
 	server.put(
-		'/',
+		'/assign',
 		{
-			// preHandler: [server.authenticate],
+			preHandler: [server.authenticate],
 			schema: {
 				response: {
 					200: { $ref: '/definitions/taskSchema#' },
 				},
 			},
 		},
-		updateTaskHandler
+		assignTasksHandler
 	);
 }
 

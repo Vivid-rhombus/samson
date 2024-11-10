@@ -4,14 +4,13 @@ import {
 	TaskIdParamInput,
 	TaskUpdateInput,
 } from './tasks.schemas';
-// import { createTask, findTaskByEmail, findTasks } from './tasks.services';
 import {
 	assignTasks,
-	createOne,
-	deleteOne,
-	find,
-	findOne,
-	updateOne,
+	createTask,
+	deleteTaskById,
+	findTasks,
+	findTaskById,
+	updateTaskById,
 } from '../../db/tasksHandler';
 
 export async function postTaskHandler(
@@ -23,7 +22,7 @@ export async function postTaskHandler(
 	const body = request.body;
 
 	try {
-		const task = await createOne(body);
+		const task = await createTask(body);
 
 		return reply.code(201).send(task);
 	} catch (e) {
@@ -37,8 +36,8 @@ export async function getTasksHandler(
 	reply: FastifyReply
 ) {
 	try {
-		const tasks = await find({});
-
+		const tasks = await findTasks();
+		if (tasks.length === 0) return reply.code(404).send();
 		return reply.code(200).send(tasks);
 	} catch (e) {
 		console.log(e);
@@ -52,8 +51,8 @@ export async function getTaskHandler(
 ) {
 	try {
 		const { id } = request.params;
-		const task = await findOne({ id });
-
+		const task = await findTaskById(id);
+		if (!task) return reply.code(404).send();
 		return reply.code(200).send(task);
 	} catch (e) {
 		console.log(e);
@@ -67,7 +66,7 @@ export async function deleteTaskHandler(
 ) {
 	try {
 		const { id } = request.params;
-		const task = await deleteOne({ id });
+		const task = await deleteTaskById(id);
 
 		return reply.code(200).send(task);
 	} catch (e) {
@@ -83,7 +82,7 @@ export async function updateTaskHandler(
 	try {
 		const { id } = request.params;
 		const body = request.body;
-		const task = await updateOne({ id }, body);
+		const task = await updateTaskById(id, body);
 
 		return reply.code(200).send(task);
 	} catch (e) {
@@ -98,10 +97,10 @@ export async function completeTaskHandler(
 ) {
 	try {
 		const { id } = request.params;
-		const task = await updateOne(
-			{ id },
-			{ completed: true, completiondate: new Date().toISOString() }
-		);
+		const task = await updateTaskById(id, {
+			completed: true,
+			completedAt: new Date(),
+		});
 
 		return reply.code(200).send(task);
 	} catch (e) {
@@ -115,6 +114,7 @@ export async function assignTasksHandler(
 	reply: FastifyReply
 ) {
 	try {
+		console.log(request.user);
 		await assignTasks();
 
 		return reply.code(200).send('done');

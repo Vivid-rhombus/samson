@@ -6,7 +6,6 @@ import userRoutes from './modules/users/users.routes';
 import taskRoutes from './modules/tasks/tasks.routes';
 import { userSchemas } from './modules/users/users.schemas';
 import { taskSchemas } from './modules/tasks/tasks.schemas';
-import { version } from '../package.json';
 
 declare module 'fastify' {
 	interface FastifyRequest {
@@ -19,7 +18,7 @@ declare module 'fastify' {
 
 declare module '@fastify/jwt' {
 	interface FastifyJWT {
-		data: {
+		user: {
 			role: string;
 		};
 	}
@@ -51,6 +50,10 @@ function buildServer() {
 		async (request: FastifyRequest, reply: FastifyReply) => {
 			try {
 				await request.jwtVerify();
+				if (request.user.role !== 'admin') {
+					reply.code(403).send();
+					return;
+				}
 			} catch (e) {
 				return reply.send(e);
 			}
@@ -65,7 +68,7 @@ function buildServer() {
 		req.jwt = server.jwt;
 		return next();
 	});
-	// definitions: { ...userSchemas, ...taskSchemas }
+
 	server.register(swagger, {
 		openapi: {
 			openapi: '3.0.0',
@@ -104,8 +107,8 @@ function buildServer() {
 		routePrefix: '/documentation',
 	});
 
-	server.register(userRoutes, { prefix: 'api/users' });
-	server.register(taskRoutes, { prefix: 'api/tasks' });
+	server.register(userRoutes, { prefix: '/users' });
+	server.register(taskRoutes, { prefix: '/tasks' });
 
 	return server;
 }

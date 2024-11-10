@@ -1,99 +1,98 @@
-import { getClient } from './postgresHandler';
-import { randomUUID } from 'crypto';
-import { QueryResult } from 'pg';
+import { and, eq, is, isNull, SQLWrapper } from 'drizzle-orm';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
-import { Task, TaskQuery } from '../modules/tasks/tasks.schemas';
-import { User } from '../modules/users/users.schemas';
+import { db } from './db';
+import { TasksTable, UsersTable } from './schema';
 
-const whereClauseBuilder = (query: TaskQuery) => {
-	return Object.entries(query)
-		.map(([key, val]) => {
-			return `${key} = '${val}'`;
-		})
-		.join(' AND ');
-};
-
-export const findOne = async (query: TaskQuery) => {
-	const whereClause = whereClauseBuilder(query);
-	const sqlQuery = `SELECT * FROM tasks WHERE ${whereClause}`;
-	const result: QueryResult<Task> = await getClient().query(sqlQuery);
-	return result.rows[0];
-};
-
-export const find = async (query: TaskQuery) => {
-	const whereClause = whereClauseBuilder(query);
-	const sqlQuery =
-		Object.keys(query).length > 0
-			? `SELECT * FROM tasks WHERE ${whereClause}`
-			: `SELECT * FROM tasks`;
-	const result: QueryResult<Task> = await getClient().query(sqlQuery);
-	return result.rows;
-};
-
-export const createOne = async (task: TaskQuery) => {
-	task.id = randomUUID();
-	task.createdat = new Date().toISOString();
-	task.updatedat = new Date().toISOString();
-	task.user_id = task?.user_id || null;
-	const sqlQuery = `INSERT INTO tasks(${Object.keys(task).join(
-		', '
-	)}) VALUES (${Object.keys(task)
-		.map((key, index) => `$${index + 1}`)
-		.join(', ')})`;
-	const result = await getClient().query({
-		text: sqlQuery,
-		values: Object.values(task),
+export const findTaskById = async (id: string) => {
+	const tasks = await db.query.TasksTable.findMany({
+		where: eq(TasksTable.id, id),
+		limit: 1,
 	});
-	return result;
+
+	return tasks[0];
 };
 
-export const updateOne = async (query: TaskQuery, task: TaskQuery) => {
-	task.updatedat = new Date().toISOString();
-	const whereClause = whereClauseBuilder(query);
-	const sqlQuery = `UPDATE tasks SET ${Object.keys(task)
-		.map((key, index) => {
-			return `${key} = $${index + 1}`;
-		})
-		.join(' , ')} WHERE ${whereClause}`;
-	const result = await getClient().query({
-		text: sqlQuery,
-		values: Object.values(task),
+export const findTasks = async (...filters: SQLWrapper[]) => {
+	const tasks = await db.query.TasksTable.findMany({
+		where: filters.length > 0 ? and(...filters) : undefined,
+		limit: 100,
 	});
-	return result;
+
+	return tasks;
 };
 
-export const deleteOne = async (query: TaskQuery) => {
-	const whereClause = whereClauseBuilder(query);
-	const sqlQuery = `DELETE FROM tasks WHERE ${whereClause}`;
-	const result = await getClient().query(sqlQuery);
-	return result;
+export const createTask = async (task: TaskInsert) => {
+	const results = await db.insert(TasksTable).values(task).returning();
+	return results[0];
 };
 
-export const droptasks = async () => {
-	const sqlQuery = `DELETE FROM tasks`;
-	const result = await getClient().query(sqlQuery);
-	return result;
+export const updateTasks = async (
+	updateObj: TaskUpdate,
+	...filters: SQLWrapper[]
+) => {
+	updateObj.updatedAt = new Date();
+	const results = await db
+		.update(TasksTable)
+		.set(updateObj)
+		.where(and(...filters))
+		.returning({ id: TasksTable.id });
+	return results[0];
+};
+
+export const updateTaskById = async (id: string, updateObj: TaskUpdate) => {
+	updateObj.updatedAt = new Date();
+	const results = await db
+		.update(TasksTable)
+		.set(updateObj)
+		.where(eq(TasksTable.id, id))
+		.returning();
+	return results[0];
+};
+
+export const deleteTaskById = async (id: string) => {
+	const results = await db
+		.delete(TasksTable)
+		.where(eq(TasksTable.id, id))
+		.returning({ id: TasksTable.id });
+	return results[0];
+};
+
+export const dropTasksTable = async () => {
+	await db.delete(TasksTable);
 };
 
 export const assignTasks = async () => {
-	const userSqlQuery = 'SELECT * FROM users';
-	const users: QueryResult<User> = await getClient().query(userSqlQuery);
-	const unassignedTasks: QueryResult<Task> = await getClient().query(
-		'SELECT * FROM tasks WHERE user_id IS null'
-	);
+	const users = await db.select({ id: UsersTable.id }).from(UsersTable);
 
-	const updates = unassignedTasks.rows.map((task) => {
-		const randomUserIndex = Math.floor(Math.random() * users.rows.length);
-		const randomUser = users.rows[randomUserIndex];
+	const unassignedTasks = await db
+		.select({
+			id: TasksTable.id,
+		})
+		.from(TasksTable)
+		.where(isNull(TasksTable.userId));
+
+	const updates = unassignedTasks.map((task) => {
+		const randomUserIndex = Math.floor(Math.random() * users.length);
+		const randomUser = users[randomUserIndex];
 		console.log(randomUser);
 
-		return getClient().query({
-			text: 'UPDATE tasks SET user_id = $1 WHERE id = $2 RETURNING *',
-			values: [randomUser.id, task.id],
-		});
+		return db
+			.update(TasksTable)
+			.set({ userId: randomUser.id })
+			.where(eq(TasksTable.id, task.id));
 	});
 
-	const results = await Promise.all(updates);
+	await Promise.all(updates);
 
-	return results;
+	return;
 };
+
+export const taskSchema = createSelectSchema(TasksTable);
+
+const insertTaskSchema = createInsertSchema(TasksTable);
+const partialTaskSchema = taskSchema.partial();
+
+type TaskUpdate = z.infer<typeof partialTaskSchema>;
+type TaskInsert = z.infer<typeof insertTaskSchema>;

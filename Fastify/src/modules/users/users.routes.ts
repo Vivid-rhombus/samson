@@ -6,7 +6,6 @@ import {
 	postUserHandler,
 	updateUserHandler,
 } from './users.controller';
-import { assignTasksHandler } from '../tasks/tasks.controller';
 
 async function userRoutes(server: FastifyInstance) {
 	server.post(
@@ -53,7 +52,7 @@ async function userRoutes(server: FastifyInstance) {
 			schema: {
 				params: { $ref: '/definitions/userIdSchema#' },
 				response: {
-					200: { $ref: '/definitions/deleteResponse#' },
+					200: { $ref: '/definitions/userIdSchema#' },
 				},
 			},
 		},
@@ -71,10 +70,8 @@ async function userRoutes(server: FastifyInstance) {
 				},
 			},
 		},
-		assignTasksHandler
+		updateUserHandler
 	);
-
-	// preHandler: [server.authenticate],
 }
 
 export default userRoutes;
