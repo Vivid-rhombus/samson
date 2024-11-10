@@ -1,15 +1,14 @@
-import Joi from 'joi';
+import { z } from 'zod';
+import { taskSchema } from '../db/tasksHandler';
 
-export const taskSchema = Joi.object({
-	name: Joi.string().required(),
-	description: Joi.string().required(),
-}).required();
+export const createTaskSchema = taskSchema.pick({
+	name: true,
+	description: true,
+});
+export const updateTaskSchema = createTaskSchema.partial();
+export const idSchema = z.object({
+	id: z.string().uuid(),
+});
 
-export const updateTaskSchema = Joi.object({
-	name: Joi.string(),
-	description: Joi.string(),
-}).required();
-
-export const taskIdSchema = Joi.object({
-	id: Joi.string().required(),
-}).required();
+export type CreateTask = z.infer<typeof createTaskSchema>;
+export type UpdateTask = z.infer<typeof updateTaskSchema>;

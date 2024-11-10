@@ -1,14 +1,16 @@
-import Joi from 'joi';
+import { z } from 'zod';
+import { userSchema } from '../db/usersHandler';
 
-export const userSchema = Joi.object({
-	name: Joi.string().required(),
-	role: Joi.string().required(),
-}).required();
+export const createUserSchema = userSchema.pick({
+	name: true,
+	role: true,
+});
+export const updateUserSchema = userSchema.pick({ role: true });
 
-export const updateUserSchema = Joi.object({
-	role: Joi.string().required().valid('admin', 'user'),
-}).required();
+export const idSchema = z.object({
+	id: z.string().uuid(),
+});
 
-export const userIdSchema = Joi.object({
-	id: Joi.string().required(),
-}).required();
+export type CreateUser = z.infer<typeof createUserSchema>;
+export type UpdateUser = z.infer<typeof updateUserSchema>;
+export type Id = z.infer<typeof idSchema>;

@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { ExpressJoiInstance, createValidator } from 'express-joi-validation';
+import validator from '../middleware/validationMiddleware';
 
 import {
-	userSchema,
+	createUserSchema,
 	updateUserSchema,
-	userIdSchema,
+	idSchema,
 } from '../validations/users';
 import {
 	getUser,
@@ -15,17 +15,15 @@ import {
 } from '../handlers/users';
 
 const router = Router();
-const validator: ExpressJoiInstance = createValidator();
 
 router.get('/', getUsers);
-router.get('/:id', validator.params(userIdSchema), getUser);
+router.get('/:id', validator({ params: idSchema }), getUser);
 router.patch(
 	'/:id',
-	validator.params(userIdSchema),
-	validator.body(updateUserSchema),
+	validator({ params: idSchema, body: updateUserSchema }),
 	updateUser
 );
-router.delete('/:id', validator.params(userIdSchema), deleteUser);
-router.post('/', validator.body(userSchema), postUser);
+router.delete('/:id', validator({ params: idSchema }), deleteUser);
+router.post('/', validator({ body: createUserSchema }), postUser);
 
 export default router;

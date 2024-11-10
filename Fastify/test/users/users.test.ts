@@ -1,21 +1,19 @@
-import { Express } from 'express';
-import request, { Response } from 'supertest';
-
-import { loadApp } from '../../src/server';
-import { userInterface } from '../../src/db/postgres/users.interface';
+import { FastifyInstance } from 'fastify';
 import { randomUUID } from 'crypto';
+
+import buildServer from '../../src/server';
 import { createTask, dropTasksTable } from '../../src/db/tasksHandler';
 import {
 	createUser,
 	dropUsersTable,
 	findUsers,
 } from '../../src/db/usersHandler';
+import { FullUser } from '../../src/modules/users/users.schemas';
 
-let app: Express;
+let app: FastifyInstance = buildServer();
 
 describe('Test /users endpoints', () => {
 	beforeAll(async () => {
-		app = await loadApp();
 		await dropUsersTable();
 	});
 
@@ -30,9 +28,9 @@ describe('Test /users endpoints', () => {
 
 	describe('GET /users', () => {
 		it('Should get all users', async () => {
-			const response: Response = await request(app).get('/users');
-			expect(response.body.length).toBe(2);
-			expect(response.body).toMatchObject([
+			const response = await app.inject().get('/users');
+			expect(response.json().length).toBe(2);
+			expect(response.json()).toMatchObject([
 				{ name: 'abc', role: 'admin' },
 				{ name: 'xyz', role: 'user' },
 			]);
@@ -40,32 +38,30 @@ describe('Test /users endpoints', () => {
 
 		it('Should fail to get all users', async () => {
 			await dropUsersTable();
-			const response: Response = await request(app).get(`/users`);
-			expect(response.status).toBe(404);
+			const response = await app.inject().get(`/users`);
+			expect(response.statusCode).toBe(404);
 		});
 
 		it('Should get a specific user', async () => {
 			const users = await findUsers();
 			const { id } = users[0];
 			await createTask({ name: 'a', description: 'abc', userId: id });
-			const response: Response = await request(app).get(`/users/${id}`);
-			const { tasks } = response.body as userInterface;
-			expect(response.body).toMatchObject({ name: 'abc', role: 'admin' });
+			const response = await app.inject().get(`/users/${id}`);
+			const { tasks } = response.json() as FullUser;
+			expect(response.json()).toMatchObject({ name: 'abc', role: 'admin' });
 			expect(tasks?.length).toBe(1);
 			await dropTasksTable();
 		});
 
 		it('Should fail to get a specific user', async () => {
-			const response: Response = await request(app).get(
-				`/users/${randomUUID()}`
-			);
-			expect(response.status).toBe(404);
+			const response = await app.inject().get(`/users/${randomUUID()}`);
+			expect(response.statusCode).toBe(404);
 		});
 	});
 
 	describe('POST /users', () => {
 		it('Should create a user', async () => {
-			await request(app).post(`/users`).send({
+			await app.inject().post(`/users`).body({
 				name: 'efg',
 				role: 'user',
 			});
@@ -82,17 +78,17 @@ describe('Test /users endpoints', () => {
 		});
 
 		it('Should fail to create a user', async () => {
-			const response: Response = await request(app).post(`/users`).send({
+			const response = await app.inject().post(`/users`).body({
 				name: 'efg',
 			});
-			expect(response.status).toBe(400);
+			expect(response.statusCode).toBe(400);
 		});
 	});
 
 	it('Should delete a user', async () => {
 		let users = await findUsers();
 		const { id } = users[0];
-		await request(app).delete(`/users/${id}`);
+		await app.inject().delete(`/users/${id}`);
 		users = await findUsers();
 		expect(users.length).toBe(1);
 		expect(users[0].id).not.toBe(id);
@@ -103,7 +99,7 @@ describe('Test /users endpoints', () => {
 		const user = users.find((user) => {
 			return user.role === 'user';
 		});
-		await request(app).patch(`/users/${user?.id}`).send({ role: 'admin' });
+		await app.inject().patch(`/users/${user?.id}`).body({ role: 'admin' });
 		users = await findUsers();
 		expect(users).toMatchObject([
 			{ name: 'abc', role: 'admin' },
